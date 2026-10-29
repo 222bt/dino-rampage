@@ -927,8 +927,9 @@ function gainRage(n){
     for(let i=0;i<3;i++)setTimeout(()=>addRing(D.x,D.z,30,0xff3a1a,.7,1+i*2),i*120);
     D.rageShown=1.6;}
 }
+const DMG_TAKEN=.6; // enemies deal 60% of their listed damage
 function hurtDino(dmg){
-  if(D.dead||G.state!=='play'||D.rageT>0)return;D.hp-=dmg;D.hurtT=.18;D.regenT=4;G.hurt=Math.min(1,G.hurt+dmg/35);
+  if(D.dead||G.state!=='play'||D.rageT>0)return;dmg*=DMG_TAKEN;D.hp-=dmg;D.hurtT=.18;D.regenT=4;G.hurt=Math.min(1,G.hurt+dmg/35);
   if(D.hp<=0){D.hp=0;D.dead=true;D.deadT=0;sRoar();breathSound(false);banner(I18N[LANG].fell,'',false);}
 }
 
