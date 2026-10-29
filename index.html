@@ -115,6 +115,18 @@ h1{font-family:var(--f-display);font-weight:400;font-size:clamp(52px,12vw,96px);
 .stat span{display:block;font-size:11px;letter-spacing:.08em;color:var(--ink-dim);}
 .stat b{font-family:var(--f-display);font-weight:400;font-size:26px;font-variant-numeric:tabular-nums;}
 #pauseOv .card{justify-items:center;text-align:center;}
+#cine{position:absolute;inset:0;pointer-events:none;}
+#cine .bar{position:absolute;left:0;right:0;height:13vh;background:#000;transition:transform 1.1s cubic-bezier(.2,.8,.2,1);}
+#cine .top{top:0;transform:translateY(-100%);}
+#cine .bot{bottom:0;transform:translateY(100%);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));box-sizing:border-box;}
+#cine.on .bar{transform:none;}
+#cine .cap{display:grid;gap:2px;opacity:0;transition:opacity 1s 2.2s;min-width:0;}
+#cine.on .cap{opacity:1;}
+#cine .cap b{font-family:var(--f-display);font-weight:400;font-size:clamp(18px,3.4vw,28px);color:var(--ink);letter-spacing:.04em;}
+#cine .cap span{font-size:12px;color:var(--ink-dim);}
+#cineSkip{pointer-events:auto;flex:none;font:600 12px/1 var(--f-body);color:var(--ink-dim);background:transparent;border:1px solid rgba(255,243,228,.25);border-radius:999px;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .6s 1.5s;}
+#cine.on #cineSkip{opacity:1;}
+@media (prefers-reduced-motion:reduce){#cine .bar,#cine .cap,#cineSkip{transition:none;}}
 .pbtns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
 .go.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--panel-line),0 5px 0 rgba(0,0,0,.35);}
 .go.ghost:active{box-shadow:inset 0 0 0 2px var(--panel-line),0 1px 0 rgba(0,0,0,.35);}
@@ -213,6 +225,11 @@ h1{font-family:var(--f-display);font-weight:400;font-size:clamp(52px,12vw,96px);
       <button class="go" id="againBtn" data-i18n="again">다시 깨어나기</button>
       <div class="best" id="bestTxt2"></div>
     </div>
+  </div>
+
+  <div id="cine" hidden>
+    <div class="bar top"></div>
+    <div class="bar bot"><div class="cap"><b id="cineCap"></b><span id="cineSub"></span></div><button id="cineSkip" type="button"></button></div>
   </div>
 
   <div id="pauseOv" class="overlay" hidden>
@@ -743,7 +760,7 @@ ko:{title:'공룡 대습격',hp:'체력',rage:'분노',speed:'속도',destr:'도
   threatLv:n=>'위협 레벨 '+n,cityDown:'도시 완파',cityDownS:'모든 건물이 무너졌습니다',pctB:p=>'도시 '+p+'% 파괴',pctS:'계속 밀어붙이세요',
   roarS:'주변 적이 3초간 마비됩니다',wake:'도시에 깨어났다',wakeS:'군대가 몰려옵니다. 건물을 무너뜨리세요.',
   rageEnd:'분노 해제',rageEndS:'다시 병력을 처치해 분노를 채우세요',air:'공습 경보',airS:'붉은 표식에서 벗어나세요',
-  inv:s=>'무적 '+s+'초',combo:(c,m)=>c+' 연속 · 점수 x'+m,lang:'언어'},
+  skip:'건너뛰기',inv:s=>'무적 '+s+'초',combo:(c,m)=>c+' 연속 · 점수 x'+m,lang:'언어'},
 en:{title:'Dino Rampage',hp:'HP',rage:'Rage',speed:'Speed',destr:'City destroyed',threat:'Threat',pause:'Pause',sound:'Sound',muted:'Muted',soundOff:'Mute',soundOn:'Unmute',
   rageBig:'RAGE MODE',rageSub:'Invincible · Smash everything with your body',alert:'ALERT',skTail:'Tail Whip',skStomp:'Stomp',skBite:'Bite',skRoar:'Roar',
   kicker:'Breaking news · Giant creature sighted downtown',h1:'Dino<br>Rampage',
@@ -758,7 +775,7 @@ en:{title:'Dino Rampage',hp:'HP',rage:'Rage',speed:'Speed',destr:'City destroyed
   threatLv:n=>'Threat level '+n,cityDown:'City leveled',cityDownS:'Every building has fallen',pctB:p=>p+'% of the city destroyed',pctS:'Keep pushing',
   roarS:'Nearby enemies are stunned for 3 seconds',wake:'Awake in the city',wakeS:'The army is coming. Tear the buildings down.',
   rageEnd:'Rage over',rageEndS:'Defeat troops to fill Rage again',air:'AIR RAID',airS:'Get out of the red markers',
-  inv:s=>'Invincible '+s+'s',combo:(c,m)=>c+' combo · Score x'+m,lang:'Language'},
+  skip:'Skip',inv:s=>'Invincible '+s+'s',combo:(c,m)=>c+' combo · Score x'+m,lang:'Language'},
 ja:{title:'恐竜大襲撃',hp:'体力',rage:'怒り',speed:'速度',destr:'都市破壊率',threat:'脅威',pause:'一時停止',sound:'音',muted:'消音',soundOff:'ミュート',soundOn:'音を出す',
   rageBig:'怒り爆発',rageSub:'無敵 · 体当たりで全部ぶっ壊せ',alert:'警報',skTail:'尻尾攻撃',skStomp:'踏みつけ',skBite:'噛みつき',skRoar:'咆哮',
   kicker:'緊急速報 · 都心に巨大生物出現',h1:'恐竜<br>大襲撃',
@@ -773,7 +790,7 @@ ja:{title:'恐竜大襲撃',hp:'体力',rage:'怒り',speed:'速度',destr:'都�
   threatLv:n=>'脅威レベル '+n,cityDown:'都市壊滅',cityDownS:'すべてのビルが崩れ落ちた',pctB:p=>'都市 '+p+'% 破壊',pctS:'どんどん押し進め',
   roarS:'周囲の敵が3秒間マヒする',wake:'都市で目覚めた',wakeS:'軍隊が押し寄せてくる。ビルを崩せ。',
   rageEnd:'怒り終了',rageEndS:'再び兵力を倒して怒りをためよう',air:'空襲警報',airS:'赤いマークから離れろ',
-  inv:s=>'無敵 '+s+'秒',combo:(c,m)=>c+'連続 · スコア x'+m,lang:'言語'},
+  skip:'スキップ',inv:s=>'無敵 '+s+'秒',combo:(c,m)=>c+'連続 · スコア x'+m,lang:'言語'},
 zh:{title:'恐龙大袭击',hp:'生命',rage:'怒气',speed:'速度',destr:'城市破坏率',threat:'威胁',pause:'暂停',sound:'声音',muted:'静音',soundOff:'静音',soundOn:'开启声音',
   rageBig:'怒气爆发',rageSub:'无敌 · 用身体撞碎一切',alert:'警报',skTail:'甩尾',skStomp:'践踏',skBite:'撕咬',skRoar:'咆哮',
   kicker:'突发新闻 · 市中心出现巨型生物',h1:'恐龙<br>大袭击',
@@ -788,7 +805,7 @@ zh:{title:'恐龙大袭击',hp:'生命',rage:'怒气',speed:'速度',destr:'城�
   threatLv:n=>'威胁等级 '+n,cityDown:'城市全毁',cityDownS:'所有建筑都已倒塌',pctB:p=>'城市已摧毁 '+p+'%',pctS:'继续推进',
   roarS:'周围敌人麻痹3秒',wake:'在城市中苏醒',wakeS:'军队正在逼近。推倒那些大楼。',
   rageEnd:'怒气消退',rageEndS:'再次消灭敌军积攒怒气',air:'空袭警报',airS:'离开红色标记区域',
-  inv:s=>'无敌 '+s+'秒',combo:(c,m)=>c+'连击 · 得分 x'+m,lang:'语言'}
+  skip:'跳过',inv:s=>'无敌 '+s+'秒',combo:(c,m)=>c+'连击 · 得分 x'+m,lang:'语言'}
 };
 const LANG_FONTS={ja:'https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;600;700&display=swap',
   zh:'https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;600;700&display=swap'};
@@ -845,7 +862,7 @@ function destroyBuilding(b){
   const pct=G.destroyed/G.total;
   const ms=[.1,.25,.5,.75,1];
   while(G.milestone<ms.length&&pct>=ms[G.milestone]){const v=ms[G.milestone];G.milestone++;
-    if(v>=1){banner(I18N[LANG].cityDown,I18N[LANG].cityDownS);setTimeout(()=>{if(G.state==='play')gameOver(true);},2500);}
+    if(v>=1){setTimeout(startVictory,1400);}
     else banner(I18N[LANG].pctB(Math.round(v*100)),I18N[LANG].pctS);}
 }
 function updBuildings(dt){
@@ -963,6 +980,7 @@ function clearWorld(){
   for(const p of projs)scene.remove(p.m);projs=[];
   for(const s of strikes)scene.remove(s.m);strikes=[];
   FX.clear();DX.clear();
+  if(V.mesh){scene.remove(V.mesh);V.mesh=null;}V.landed=false;$('cine').classList.remove('on');$('cine').hidden=true;
 }
 function startGame(){
   audioInit();clearWorld();buildCity();resetDino();
@@ -981,6 +999,7 @@ function gameOver(win){
   $('over').hidden=false;$('hud').hidden=true;
 }
 $('startBtn').addEventListener('click',startGame);
+$('cineSkip').addEventListener('click',()=>{if(G.state==='victory'&&V.t>1.5)endVictory();});
 $('againBtn').addEventListener('click',startGame);
 
 /* ---------------- update ---------------- */
@@ -1201,14 +1220,92 @@ function updStrikes(dt){
       scene.remove(s.m);strikes.splice(i,1);}}
 }
 
+/* ---------------- victory cutscene ---------------- */
+const V={t:0,mesh:null,base:null,roar1:false,roar2:false,done:false};
+function makeBannerMesh(){
+  const W=2048,H=440,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#ecdcb8';x.fillRect(0,0,W,H);
+  for(let i=0;i<70;i++){x.fillStyle=`rgba(${110+Math.random()*40|0},${80+Math.random()*30|0},50,${Math.random()*.08})`;x.beginPath();x.ellipse(Math.random()*W,Math.random()*H,20+Math.random()*120,10+Math.random()*50,Math.random()*3,0,TAU);x.fill();}
+  x.strokeStyle='#7c2416';x.lineWidth=14;x.strokeRect(30,30,W-60,H-60);x.lineWidth=4;x.strokeRect(56,56,W-112,H-112);
+  const txt='WHEN DINOSAURS RULED THE EARTH';let fs=190;
+  do{x.font=`900 ${fs}px "Black Han Sans", Impact, "Arial Black", sans-serif`;fs-=4;}while(x.measureText(txt).width>W-200&&fs>40);
+  x.textAlign='center';x.textBaseline='middle';
+  x.fillStyle='rgba(60,20,10,.25)';x.fillText(txt,W/2+6,H/2+8);
+  x.fillStyle='#8a2414';x.fillText(txt,W/2,H/2+2);
+  for(let i=0;i<12;i++){x.fillStyle='#5a4a3a';x.beginPath();x.arc(80+i*(W-160)/11,44,9,0,TAU);x.fill();}
+  const tex=new THREE.CanvasTexture(c);tex.anisotropy=4;
+  const geo=new THREE.PlaneGeometry(24,24*H/W,30,6);
+  const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:tex,side:THREE.DoubleSide}));m.castShadow=true;
+  V.base=Float32Array.from(geo.attributes.position.array);return m;
+}
+function startVictory(){
+  if(G.state==='pause'){setTimeout(startVictory,400);return;}
+  if(G.state!=='play'||D.dead)return;
+  G.state='victory';V.t=0;V.roar1=V.roar2=V.done=false;
+  for(const e of enemies){if(!e.dead)explode(e.mesh.position.x,Math.max(1,e.mesh.position.y),e.mesh.position.z,.6,false);scene.remove(e.mesh);}enemies=[];
+  for(const p of projs)scene.remove(p.m);projs=[];
+  for(const s of strikes)scene.remove(s.m);strikes=[];
+  D.speed=0;D.rageT=0;D.rage=0;skinM.emissive.setHex(0);skinM.emissiveIntensity=1;darkM.emissive.setHex(0);
+  model.rotation.set(0,0,0);model.position.y=0;parts.head.position.z=6.6;
+  if(V.mesh)scene.remove(V.mesh);V.mesh=makeBannerMesh();scene.add(V.mesh);
+  $('hud').hidden=true;$('vignette').style.opacity='0';
+  $('cineCap').textContent=L().cityDown;$('cineSub').textContent=L().cityDownS;$('cineSkip').textContent=L().skip;
+  $('cine').hidden=false;requestAnimationFrame(()=>$('cine').classList.add('on'));
+  sTone(55,40,6,.35,'sine',0,200);sNoise(5,.25,160,'lowpass',0,1.2);
+}
+function endVictory(){
+  if(V.done)return;V.done=true;
+  $('cine').classList.remove('on');$('cine').hidden=true;
+  gameOver(true);
+}
+function vicCamera(){
+  const fx=Math.sin(D.h),fz=Math.cos(D.h),asp=camera.aspect||1;
+  const dc=14+Math.max(16,24/(1.108*asp));
+  const a=Math.sin(V.t*.18)*.28,cx=Math.sin(D.h+a),cz=Math.cos(D.h+a);
+  const ty=V.t<1?lerp(18,6,V.t):6;
+  return [D.x+cx*dc,ty,D.z+cz*dc,D.x+fx*6,11,D.z+fz*6];
+}
+function updVictory(dt,t){
+  V.t+=dt;const vt=V.t;
+  // T. rex: idle, then two big roars
+  for(let i=0;i<parts.tail.length;i++)parts.tail[i].rotation.y=Math.sin(t*1.4-i*.6)*.06;
+  let headX=Math.sin(t*1.1)*.04,jawX=.05;
+  const roar=(s,d)=>{if(vt<s||vt>s+d)return 0;return Math.sin((vt-s)/d*Math.PI);};
+  const r=Math.max(roar(1.0,2.2),roar(5.2,2.4));
+  headX=lerp(headX,-.6,r);jawX=lerp(jawX,.95,r);
+  if(!V.roar1&&vt>1.0){V.roar1=true;sRoar();sTone(110,40,2,.5,'sawtooth',.1,600);G.shake=1;for(let i=0;i<3;i++)setTimeout(()=>addRing(D.x,D.z,40,0xfff1d6,1.1,8+i*2),i*160);}
+  if(!V.roar2&&vt>5.2){V.roar2=true;sRoar();sTone(95,35,2.2,.55,'sawtooth',.1,600);G.shake=1.2;for(let i=0;i<3;i++)setTimeout(()=>addRing(D.x,D.z,46,0xfff1d6,1.1,8+i*2),i*160);}
+  parts.head.rotation.x=lerp(parts.head.rotation.x,headX,1-Math.exp(-dt*8));
+  parts.jaw.rotation.x=lerp(parts.jaw.rotation.x,jawX,1-Math.exp(-dt*10));
+  model.rotation.x=-.08*r;
+  dino.position.set(D.x,0,D.z);dino.rotation.y=D.h;
+  // dust drifting down across the shot
+  if(Math.random()<.6){const fx=Math.sin(D.h),fz=Math.cos(D.h);DX.spawn(D.x+fx*rand(4,24)+rand(-14,14),rand(18,30),D.z+fz*rand(4,24)+rand(-14,14),rand(-1,1),rand(-2,-.5),rand(-1,1),4,rand(.2,.5),0xcfc0a8,.4);}
+  // banner flutters down between camera and dino
+  if(V.mesh){
+    const fx=Math.sin(D.h),fz=Math.cos(D.h),f=clamp((vt-.6)/7.4,0,1);
+    const y=lerp(42,2.2,1-Math.pow(1-f,1.6));
+    V.mesh.position.set(D.x+fx*15+Math.sin(vt*.9)*1.6*(1-f),y,D.z+fz*15);
+    V.mesh.lookAt(camera.position.x,y,camera.position.z);
+    V.mesh.rotateZ(Math.sin(vt*1.3)*.14*(1-f)+(f>=1?.04:0));
+    V.mesh.rotateX(f>=1?-1.35:Math.sin(vt*1.7)*.18*(1-f));
+    const pa=V.mesh.geometry.attributes.position,b=V.base,amp=1-f*.85;
+    for(let i=0;i<pa.count;i++){const px=b[i*3],py=b[i*3+1];
+      pa.array[i*3+2]=(Math.sin(px*.42+vt*3.2)*.7+Math.sin(py*.9+px*.2+vt*2.1)*.35)*amp;}
+    pa.needsUpdate=true;V.mesh.geometry.computeVertexNormals();
+    if(f>=1&&!V.landed){V.landed=true;for(let i=0;i<20;i++)DX.spawn(V.mesh.position.x+rand(-10,10),.5,V.mesh.position.z+rand(-3,3),rand(-3,3),rand(1,3),rand(-3,3),1.4,rand(.8,1.5),0xbfae9a,-1,true);}
+  }
+  if(vt>11)endVictory();
+}
 /* ---------------- camera ---------------- */
 const camPos=new V3(0,30,-40),camLook=new V3(),tmpL=new V3();
 function updCamera(dt,t){
   let tx,ty,tz,lx,ly,lz;
   if(G.state==='menu'){const a=t*.12;tx=Math.sin(a)*48;tz=Math.cos(a)*48;ty=22;lx=0;ly=8;lz=0;}
+  else if(G.state==='victory'){[tx,ty,tz,lx,ly,lz]=vicCamera();}
   else{const fx=Math.sin(D.h),fz=Math.cos(D.h);const dist=D.dead?38:30;
     tx=D.x-fx*dist;tz=D.z-fz*dist;ty=D.dead?26:19;lx=D.x+fx*8;ly=7;lz=D.z+fz*8;}
-  const k=1-Math.exp(-dt*(G.state==='menu'?2:4));
+  const k=1-Math.exp(-dt*(G.state==='menu'?2:G.state==='victory'?(V.t<1.2?2.2:6):4));
   camPos.x+=(tx-camPos.x)*k;camPos.y+=(ty-camPos.y)*k;camPos.z+=(tz-camPos.z)*k;
   tmpL.set(lx,ly,lz);camLook.lerp(tmpL,Math.min(1,k*1.5));
   const wantFov=G.state==='play'?58+Math.min(1.6,Math.abs(D.speed)/RUN)*10:58;
@@ -1271,6 +1368,7 @@ function frame(){
     for(let i=0;i<parts.tail.length;i++)parts.tail[i].rotation.y=Math.sin(T*2-i*.7)*.12;
     parts.head.rotation.x=Math.sin(T*.9)*.08;
     dino.position.set(D.x,0,D.z);dino.rotation.y=D.h;
+  }else if(G.state==='victory'){updVictory(dt,T);updBuildings(dt);
   }else{updBuildings(dt);updEnemies(dt,T);updProjs(dt);}
   if(G.state!=='pause'){updCars(dt);updCivs(dt,T);updTrees(dt);}
   FX.update(dt,T);DX.update(dt,T);updRings(dt);
